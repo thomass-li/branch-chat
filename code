@@ -1,0 +1,585 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Branch Chat</title>
+<meta name="description" content="Highlight any word in a ChatGPT, Claude or Gemini chat and open a side conversation about it. Each branch remembers the path it came from.">
+<link rel="icon" type="image/png" href="assets/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap">
+<style>
+  /* Layout: one centered column; hero with the real product beside the pitch; sections stack on phones.
+     Palette and type match the extension: dark gray #1f1f1f, off-white #e6e6e6, Geist + a serif for display. */
+  :root {
+    --bg: #1f1f1f;
+    --bg-2: #262626;
+    --bg-3: #303030;
+    --fg: #e6e6e6;
+    --fg-2: #a8a8a8;
+    --fg-3: #767676;
+    --line: #383838;
+    --ink: #1f1f1f;          /* text on light buttons */
+    --hl: rgba(230, 230, 230, .16);
+    --font-ui: "Geist", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    --font-display: "Instrument Serif", "Iowan Old Style", Georgia, serif;
+    color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } * { animation: none !important; transition: none !important; } }
+  body {
+    margin: 0; background: var(--bg); color: var(--fg);
+    font: 16px/1.6 var(--font-ui); -webkit-font-smoothing: antialiased;
+  }
+  a { color: inherit; }
+  img { max-width: 100%; display: block; }
+  .wrap {
+    max-width: 1080px; margin: 0 auto;
+    padding-left: max(20px, env(safe-area-inset-left, 0px));
+    padding-right: max(20px, env(safe-area-inset-right, 0px));
+  }
+  :focus-visible { outline: 2px solid var(--fg); outline-offset: 3px; border-radius: 6px; }
+
+  /* nav */
+  header.nav { position: sticky; top: 0; z-index: 10; background: rgba(31, 31, 31, .86); backdrop-filter: blur(10px); border-bottom: 1px solid var(--line); }
+  .nav .wrap { display: flex; align-items: center; gap: 24px; padding-block: 12px; }
+  .brand { display: flex; align-items: center; gap: 10px; font-weight: 600; text-decoration: none; }
+  .brand img { width: 28px; height: 28px; border-radius: 7px; }
+  .nav nav { display: flex; gap: 20px; margin-left: auto; font-size: 14px; color: var(--fg-2); }
+  .nav nav a { text-decoration: none; }
+  .nav nav a:hover { color: var(--fg); }
+  @media (max-width: 720px) { .nav nav { display: none; } .nav .btn { margin-left: auto; } }
+
+  /* buttons */
+  .btn {
+    display: inline-flex; align-items: center; gap: 8px; justify-content: center;
+    padding: 11px 18px; border-radius: 999px; font: 600 15px/1 var(--font-ui);
+    text-decoration: none; border: 1px solid var(--line); background: transparent; color: var(--fg); cursor: pointer;
+    transition: background .15s, border-color .15s, opacity .15s;
+  }
+  .btn:hover { border-color: var(--fg-2); }
+  .btn.solid { background: var(--fg); color: var(--ink); border-color: var(--fg); }
+  .btn.solid:hover { background: #fff; }
+  .btn.small { padding: 8px 14px; font-size: 14px; }
+  .btn[aria-disabled="true"] { opacity: .55; cursor: default; pointer-events: none; }
+  .btn svg { flex: none; }
+
+  /* hero */
+  .hero { padding-block: 72px 56px; }
+  .hero .wrap { display: grid; grid-template-columns: 1.1fr .9fr; gap: 56px; align-items: center; }
+  .eyebrow { font-size: 13px; letter-spacing: .08em; text-transform: uppercase; color: var(--fg-2); margin: 0 0 18px; }
+  h1 {
+    font-family: var(--font-display); font-weight: 400; font-size: clamp(44px, 7vw, 76px); line-height: 1.02;
+    letter-spacing: -0.01em; margin: 0 0 22px; text-wrap: balance;
+  }
+  h1 em { font-style: italic; }
+  .lead { font-size: 19px; color: var(--fg-2); margin: 0 0 30px; max-width: 34em; }
+  .lead strong { color: var(--fg); font-weight: 500; }
+  .cta { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+  .meta { margin-top: 18px; font-size: 13.5px; color: var(--fg-3); display: flex; flex-wrap: wrap; gap: 6px 16px; }
+  .hl { background: var(--hl); border-bottom: 1px solid var(--fg-2); padding: 0 2px; border-radius: 2px; }
+
+  .shot { position: relative; justify-self: center; width: min(100%, 380px); }
+  .shot img { border-radius: 14px; border: 1px solid var(--line); box-shadow: 0 30px 80px rgba(0,0,0,.5); }
+  .pill {
+    display: inline-flex; gap: 2px; padding: 3px; border-radius: 999px; background: #1f1f1f; border: 1px solid var(--line);
+    box-shadow: 0 10px 30px rgba(0,0,0,.45); font: 600 12.5px/1 var(--font-ui); white-space: nowrap;
+  }
+  .pill span { padding: 7px 11px; border-radius: 999px; color: var(--fg); display: inline-flex; align-items: center; gap: 6px; }
+  .pill span:first-child { background: var(--fg); color: var(--ink); }
+  @media (max-width: 880px) {
+    .hero { padding-block: 48px 40px; }
+    .hero .wrap { grid-template-columns: 1fr; gap: 44px; }
+  }
+
+  /* sections */
+  section { padding-block: 72px; border-top: 1px solid var(--line); }
+  h2 { font-family: var(--font-display); font-weight: 400; font-size: clamp(32px, 5vw, 46px); line-height: 1.08; margin: 0 0 14px; text-wrap: balance; }
+  h2 em { font-style: italic; }
+  .section-lead { color: var(--fg-2); font-size: 17px; max-width: 40em; margin: 0 0 40px; }
+  h3 { font-size: 18px; margin: 0 0 8px; font-weight: 600; }
+
+  /* how it works */
+  .steps { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; list-style: none; padding: 0; margin: 0; counter-reset: s; }
+  .step { border: 1px solid var(--line); border-radius: 16px; padding: 22px; background: var(--bg-2); display: grid; gap: 14px; align-content: start; min-width: 0; }
+  .step .n { font-size: 13px; color: var(--fg-3); font-variant-numeric: tabular-nums; }
+  .step p { margin: 0; color: var(--fg-2); font-size: 15px; }
+  .demo { border-radius: 12px; background: var(--bg); border: 1px solid var(--line); padding: 16px; min-height: 132px; font-size: 14px; color: var(--fg-2); display: grid; align-content: center; gap: 12px; }
+  .demo .pill { justify-self: start; }
+  .demo .q { justify-self: end; background: var(--bg-3); color: var(--fg); padding: 7px 12px; border-radius: 14px; font-size: 13.5px; }
+  .demo .a { color: var(--fg); font-size: 13.5px; line-height: 1.55; }
+  .demo .a b { font-weight: 600; }
+  @media (max-width: 880px) { .steps { grid-template-columns: 1fr; } }
+
+  /* uses */
+  .uses { display: grid; gap: 20px; }
+  .use { display: grid; grid-template-columns: 1fr 1fr; gap: 36px; align-items: center; border: 1px solid var(--line); border-radius: 18px; padding: 32px; background: var(--bg-2); }
+  .use p { color: var(--fg-2); margin: 0 0 12px; }
+  .use ul { margin: 0; padding-left: 1.1em; color: var(--fg-2); display: grid; gap: 6px; font-size: 15px; }
+  .use li::marker { color: var(--fg-3); }
+  .tag { display: inline-block; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--fg-3); margin-bottom: 10px; }
+  .use .visual { min-width: 0; }
+  .use .visual img { border-radius: 12px; border: 1px solid var(--line); width: min(100%, 400px); height: auto; margin: 0 auto; }
+  @media (max-width: 880px) { .use { grid-template-columns: 1fr; padding: 24px; gap: 24px; } }
+
+  .tree-fig { display: grid; gap: 10px; justify-items: center; }
+  .tree-fig svg { width: 100%; max-width: 360px; height: auto; }
+  .tree-fig figcaption { font-size: 13.5px; color: var(--fg-2); text-align: center; max-width: 30em; }
+
+  .card-list { display: grid; gap: 10px; }
+  .mini { border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; background: var(--bg); font-size: 14px; }
+  .mini .k { color: var(--fg-3); font-size: 12px; margin-bottom: 4px; }
+  .mini .math { font-family: var(--font-display); font-size: 22px; color: var(--fg); text-align: center; padding: 6px 0; }
+
+  /* features */
+  .features { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: 16px; overflow: hidden; }
+  .feature { background: var(--bg); padding: 22px; min-width: 0; }
+  .feature h3 { font-size: 16px; }
+  .feature p { margin: 0; color: var(--fg-2); font-size: 14.5px; }
+  @media (max-width: 880px) { .features { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 560px) { .features { grid-template-columns: 1fr; } }
+
+  /* install */
+  .install { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .box { border: 1px solid var(--line); border-radius: 16px; padding: 26px; background: var(--bg-2); display: grid; gap: 14px; align-content: start; min-width: 0; }
+  .box p { margin: 0; color: var(--fg-2); font-size: 15px; }
+  .box ol { margin: 0; padding-left: 1.3em; display: grid; gap: 10px; color: var(--fg-2); font-size: 15px; }
+  .box ol strong { color: var(--fg); font-weight: 500; }
+  code { font: 13.5px ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; background: var(--bg-3); border: 1px solid var(--line); border-radius: 6px; padding: 2px 6px; color: var(--fg); }
+  .copy { margin-left: 6px; font: 600 12px var(--font-ui); background: none; border: 1px solid var(--line); color: var(--fg-2); border-radius: 6px; padding: 3px 8px; cursor: pointer; }
+  .copy:hover { color: var(--fg); border-color: var(--fg-2); }
+  .note { font-size: 13.5px; color: var(--fg-3); }
+  @media (max-width: 880px) { .install { grid-template-columns: 1fr; } }
+
+  /* privacy + footer */
+  .privacy { display: grid; grid-template-columns: 1fr auto; gap: 24px; align-items: center; }
+  .privacy p { margin: 0; color: var(--fg-2); max-width: 44em; }
+  @media (max-width: 720px) { .privacy { grid-template-columns: 1fr; } }
+  footer { border-top: 1px solid var(--line); padding-block: 28px 40px; color: var(--fg-3); font-size: 13.5px; }
+  footer .wrap { display: flex; flex-wrap: wrap; gap: 10px 24px; justify-content: space-between; }
+  footer a { text-decoration: none; }
+  footer a:hover { color: var(--fg); }
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="wrap">
+    <a class="brand" href="#top"><img src="assets/logo.png" alt="">Branch Chat</a>
+    <nav aria-label="Sections">
+      <a href="#how">How it works</a>
+      <a href="#uses">Uses</a>
+      <a href="#install">Install</a>
+      <a href="privacy.html">Privacy</a>
+    </nav>
+    <a class="btn small solid" href="#install">Get it free</a>
+  </div>
+</header>
+
+<main id="top">
+  <div class="hero">
+    <div class="wrap">
+      <div>
+        <p class="eyebrow">Chrome extension for ChatGPT, Claude &amp; Gemini</p>
+        <h1>Ask questions about <em>your questions.</em></h1>
+        <p class="lead">Highlight any word in an AI chat and open a <strong>side conversation</strong> about it. Each branch remembers the chat it came from, so you can go as deep as you like without derailing the main thread.</p>
+        <div class="cta">
+          <a class="btn solid store-link" href="https://chromewebstore.google.com/detail/kjmigpiaghnjkiefgcmekfliiofmff" target="_blank" rel="noopener" data-live="false">
+            <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="4" fill="currentColor"/></svg>
+            <span>Add to Chrome</span>
+          </a>
+          <a class="btn" href="branch-chat-1.6.2.zip" download>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
+            Download .zip
+          </a>
+        </div>
+        <div class="meta"><span>Free</span><span>Works with your own AI account</span><span>Version 1.6.2</span></div>
+      </div>
+      <div class="shot">
+        <img src="assets/branch.png" width="400" height="820" alt="The Branch Chat side panel explaining 'two-particle reduced density matrices' with a rendered equation, cited sources and a sub-branch.">
+      </div>
+    </div>
+  </div>
+
+  <section id="how">
+    <div class="wrap">
+      <h2>How it works</h2>
+      <p class="section-lead">No copying and pasting, and the main chat stays clean.</p>
+      <ol class="steps">
+        <li class="step">
+          <span class="n">Step 1</span>
+          <div class="demo" aria-hidden="true">
+            <div>The paper predicts <span class="hl">two-particle reduced density matrices</span> directly, instead of the full wavefunction.</div>
+            <div class="pill"><span>⑂ Branch from here</span><span>Explain</span></div>
+          </div>
+          <h3>Highlight</h3>
+          <p>Select a word, phrase or sentence in ChatGPT, Claude or Gemini. A button appears under it. You can also right-click, or press Alt+Shift+K.</p>
+        </li>
+        <li class="step">
+          <span class="n">Step 2</span>
+          <div class="demo" aria-hidden="true">
+            <div class="q">Explain this concisely.</div>
+            <div class="a">A <b>2-RDM</b> keeps only what you need to describe <i>pairs</i> of particles…</div>
+          </div>
+          <h3>Branch</h3>
+          <p>A side panel opens with a new branch about that text. Ask anything, or explain it in one click.</p>
+        </li>
+        <li class="step">
+          <span class="n">Step 3</span>
+          <div class="demo" aria-hidden="true">
+            <svg viewBox="0 0 220 96" role="img" aria-label="A small branch tree" style="width:100%;height:auto">
+              <g stroke="#767676" stroke-width="2" fill="none"><path d="M30 48 H80"/><path d="M80 48 Q100 48 110 24 H150"/><path d="M80 48 Q100 48 110 72 H150"/><path d="M150 24 H190"/></g>
+              <g fill="#1f1f1f" stroke="#e6e6e6" stroke-width="2"><circle cx="30" cy="48" r="9"/><circle cx="80" cy="48" r="8"/><circle cx="150" cy="24" r="8"/><circle cx="150" cy="72" r="8"/><circle cx="190" cy="24" r="8"/></g>
+            </svg>
+          </div>
+          <h3>Go deeper</h3>
+          <p>Highlight text in a branch's answer to branch again. Your whole tree is saved with that chat.</p>
+        </li>
+      </ol>
+    </div>
+  </section>
+
+  <section id="uses">
+    <div class="wrap">
+      <h2>What it's good for</h2>
+      <p class="section-lead">Branch Chat is built for the moments when one answer raises three new questions.</p>
+      <div class="uses">
+
+        <article class="use">
+          <div>
+            <span class="tag">Research</span>
+            <h3>Read papers and sources without losing your place</h3>
+            <p>Summarize a paper in your main chat, then branch off every term, method or claim you need to check.</p>
+            <ul>
+              <li>Turn on <strong>Search</strong> to answer with live web results and clickable sources.</li>
+              <li>Drop in a screenshot of a figure or table and ask about it.</li>
+              <li>Find any past branch again under History, across all your chats.</li>
+            </ul>
+          </div>
+          <div class="visual"><img src="assets/subbranch.png" width="400" height="540" loading="lazy" alt="A sub-branch asking 'Why is checking that so hard?' with the full branch tree open above it and a cited source."></div>
+        </article>
+
+        <article class="use">
+          <div>
+            <span class="tag">Questions about questions</span>
+            <h3>Follow every tangent, keep every thread</h3>
+            <p>Branch off an answer, then branch off that answer. Each branch remembers only the path that led to it, so side questions never get mixed up.</p>
+            <ul>
+              <li>Siblings stay separate: branch 5 never sees what you asked in branch 3.</li>
+              <li>Edit a question and resend it without starting over.</li>
+              <li>Delete a branch by mistake? Press Undo.</li>
+            </ul>
+          </div>
+          <figure class="tree-fig visual">
+            <svg viewBox="0 0 360 230" role="img" aria-labelledby="treeTitle">
+              <title id="treeTitle">Branch 4 remembers chats 1, 2 and 3. Branch 5 remembers chats 1 and 2.</title>
+              <g fill="none" stroke-width="2.5" stroke-linecap="round">
+                <path d="M60 60 L150 110" stroke="#e6e6e6"/>
+                <path d="M150 110 L250 160" stroke="#e6e6e6"/>
+                <path d="M250 160 L300 210" stroke="#e6e6e6"/>
+                <path d="M150 110 L300 70" stroke="#767676" stroke-dasharray="5 6"/>
+              </g>
+              <g font-family="Geist, system-ui, sans-serif" font-size="14" font-weight="600" text-anchor="middle">
+                <g><circle cx="60" cy="60" r="22" fill="#e6e6e6"/><text x="60" y="65" fill="#1f1f1f">1</text></g>
+                <g><circle cx="150" cy="110" r="20" fill="#e6e6e6"/><text x="150" y="115" fill="#1f1f1f">2</text></g>
+                <g><circle cx="250" cy="160" r="20" fill="#e6e6e6"/><text x="250" y="165" fill="#1f1f1f">3</text></g>
+                <g><circle cx="300" cy="210" r="17" fill="#1f1f1f" stroke="#e6e6e6" stroke-width="2.5"/><text x="300" y="215" fill="#e6e6e6">4</text></g>
+                <g><circle cx="300" cy="70" r="17" fill="#1f1f1f" stroke="#767676" stroke-width="2"/><text x="300" y="75" fill="#a8a8a8">5</text></g>
+              </g>
+              <text x="60" y="26" text-anchor="middle" font-family="Geist, system-ui, sans-serif" font-size="12" fill="#a8a8a8">original chat</text>
+            </svg>
+            <figcaption>Branch 4 remembers 1 → 2 → 3 → 4. Branch 5 remembers only 1 → 2 → 5.</figcaption>
+          </figure>
+        </article>
+
+        <article class="use">
+          <div>
+            <span class="tag">Understanding at a deeper level</span>
+            <h3>Turn "I sort of get it" into "I get it"</h3>
+            <p>When an explanation skips a step, highlight the step. Ask for a simpler version, an example, or the reasoning behind it, as many times as you need.</p>
+            <ul>
+              <li><strong>Explain concisely</strong> in one click from the page.</li>
+              <li>Math renders properly: fractions, matrices and equations, not raw symbols.</li>
+              <li>Code blocks are highlighted and copyable.</li>
+            </ul>
+          </div>
+          <div class="card-list visual" aria-hidden="true">
+            <div class="mini"><div class="k">You highlighted</div>“the energy depends only on the 2-RDM”</div>
+            <div class="mini"><div class="k">Branch answer</div><div class="math">E = Tr(K Γ<sup>(2)</sup>)</div>The energy is a weighted sum over pairs, so you never need the full wavefunction.</div>
+            <div class="mini"><div class="k">Next branch</div>“weighted sum over pairs” → <em>show me with 3 particles</em></div>
+          </div>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section id="features">
+    <div class="wrap">
+      <h2>Everything in a branch</h2>
+      <p class="section-lead">The tools you expect from a good AI chat, inside every side question.</p>
+      <div class="features">
+        <div class="feature"><h3>Memory along the path</h3><p>Each branch knows the original chat and the branches above it. Press ↻ to catch up with newer messages.</p></div>
+        <div class="feature"><h3>Web search with sources</h3><p>One toggle for live results, with cited pages listed under the answer.</p></div>
+        <div class="feature"><h3>Rendered math</h3><p>LaTeX from ChatGPT, Claude and Gemini is captured cleanly and displayed properly.</p></div>
+        <div class="feature"><h3>Images</h3><p>Paste, drag or attach screenshots and diagrams; the branch remembers them.</p></div>
+        <div class="feature"><h3>Your choice of AI</h3><p>Use Claude, ChatGPT, Gemini or OpenRouter with your own account.</p></div>
+        <div class="feature"><h3>Saved per chat</h3><p>Come back to a chat days later and your branches are still there.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="install">
+    <div class="wrap">
+      <h2>Install</h2>
+      <p class="section-lead">Branch Chat is free. You connect your own AI account, so you only pay your AI provider for what you use.</p>
+      <div class="install">
+        <div class="box">
+          <h3>From the Chrome Web Store</h3>
+          <p class="store-status">The easiest way: one click, and updates arrive automatically.</p>
+          <a class="btn solid store-link" href="https://chromewebstore.google.com/detail/kjmigpiaghnjkiefgcmekfliiofmff" target="_blank" rel="noopener" data-live="false"><span>Add to Chrome</span></a>
+        </div>
+        <div class="box">
+          <h3>Install the download manually</h3>
+          <ol>
+            <li><a class="btn small" href="branch-chat-1.6.2.zip" download>Download .zip</a> and unzip it.</li>
+            <li>Open <code>chrome://extensions</code><button class="copy" type="button" data-copy="chrome://extensions">Copy</button> in a new tab and turn on <strong>Developer mode</strong> (top right).</li>
+            <li>Click <strong>Load unpacked</strong> and choose the <strong>branch-chat</strong> folder.</li>
+            <li>Pin Branch Chat, click its icon, and connect your AI.</li>
+          </ol>
+          <p class="note">Keep the folder where it is: Chrome runs the extension from it.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="privacy">
+    <div class="wrap privacy">
+      <div>
+        <h2>Your chats stay yours</h2>
+        <p>Branch Chat has no servers of its own. Your branches, images and keys are stored in your browser and sent only to the AI provider you choose. No tracking, no ads, nothing sold.</p>
+      </div>
+      <a class="btn" href="privacy.html">Read the privacy policy</a>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>Branch Chat · Version 1.6.2</span>
+    <span><a href="privacy.html">Privacy</a> · <a href="#install">Install</a> · <a href="#top">Back to top</a></span>
+  </div>
+</footer>
+
+<script>
+  // Chrome Web Store buttons: set data-live="true" on them once the listing is approved.
+  document.querySelectorAll('.store-link').forEach((a) => {
+    if (a.dataset.live === 'true') return;
+    a.setAttribute('aria-disabled', 'true');
+    a.removeAttribute('href');
+    a.querySelector('span').textContent = 'Chrome Web Store · coming soon';
+  });
+  document.querySelectorAll('.store-status').forEach((p) => {
+    if (document.querySelector('.store-link[data-live="true"]')) return;
+    p.textContent = 'Branch Chat is in review on the Chrome Web Store. Until then, use the download.';
+  });
+  // Copy buttons (chrome:// links can't be opened from a web page)
+  document.querySelectorAll('.copy').forEach((b) => b.addEventListener('click', async () => {
+    try { await navigator.clipboard.writeText(b.dataset.copy); b.textContent = 'Copied'; }
+    catch { b.textContent = 'Select it'; }
+    setTimeout(() => { b.textContent = 'Copy'; }, 1500);
+  }));
+</script>
+</body>
+</html>
+
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Branch Chat Privacy Policy</title>
+<link rel="icon" type="image/png" href="assets/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap">
+<style>
+  /* Layout: a single readable column, like a policy document; the extension's own monochrome palette. */
+  :root {
+    --bg: #fafafa;
+    --surface: #ffffff;
+    --fg: #161616;
+    --fg-2: #5c5c5c;
+    --rule: #e2e2e2;
+    --mark: #1f1f1f;
+    --font-body: "Geist", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    --font-mono: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #1f1f1f; --surface: #262626; --fg: #e6e6e6; --fg-2: #a8a8a8; --rule: #383838; --mark: #e6e6e6;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #1f1f1f; --surface: #262626; --fg: #e6e6e6; --fg-2: #a8a8a8; --rule: #383838; --mark: #e6e6e6;
+    color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    background: var(--bg);
+    color: var(--fg);
+    font: 16px/1.65 var(--font-body);
+    -webkit-font-smoothing: antialiased;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    padding-block: 56px 72px;
+  }
+  .doc { max-width: 680px; margin: 0 auto; display: grid; gap: 40px; }
+
+  header { display: grid; gap: 14px; }
+  .brand { display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 15px; }
+  .brand svg { flex: none; }
+  h1 { font-size: clamp(30px, 6vw, 40px); line-height: 1.12; letter-spacing: -0.02em; margin: 0; text-wrap: balance; }
+  .meta { color: var(--fg-2); font-size: 14px; margin: 0; }
+  .lead { font-size: 18px; margin: 0; }
+
+  .glance {
+    background: var(--surface); border: 1px solid var(--rule); border-radius: 14px;
+    padding: 20px 22px; display: grid; gap: 12px;
+  }
+  .glance h2 { font-size: 13px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--fg-2); margin: 0; font-weight: 600; }
+  .glance ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+  .glance li { display: grid; grid-template-columns: 18px 1fr; gap: 10px; align-items: start; }
+  .glance li::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--mark); margin-top: 0.62em; justify-self: center; }
+
+  section { display: grid; gap: 12px; }
+  section h2 { font-size: 20px; letter-spacing: -0.01em; margin: 0; line-height: 1.3; text-wrap: balance; }
+  section p { margin: 0; }
+  section ul { margin: 0; padding-left: 1.2em; display: grid; gap: 8px; }
+  section li::marker { color: var(--fg-2); }
+  .doc > section + section { border-top: 1px solid var(--rule); padding-top: 32px; }
+
+  .table-wrap { overflow-x: auto; border: 1px solid var(--rule); border-radius: 12px; background: var(--surface); }
+  table { border-collapse: collapse; width: 100%; font-size: 14.5px; min-width: 520px; }
+  th, td { text-align: left; vertical-align: top; padding: 11px 14px; border-bottom: 1px solid var(--rule); }
+  tr:last-child td { border-bottom: 0; }
+  th { font-size: 12px; text-transform: uppercase; letter-spacing: 0.07em; color: var(--fg-2); font-weight: 600; }
+  td:first-child { font-weight: 500; }
+
+  code { font-family: var(--font-mono); font-size: 0.88em; background: var(--surface); border: 1px solid var(--rule); border-radius: 5px; padding: 0.05em 0.35em; }
+  a { color: var(--fg); text-decoration: underline; text-underline-offset: 3px; text-decoration-thickness: 1px; }
+  a:hover { text-decoration-thickness: 2px; }
+  a:focus-visible { outline: 2px solid var(--fg); outline-offset: 2px; border-radius: 3px; }
+  footer { color: var(--fg-2); font-size: 14px; border-top: 1px solid var(--rule); padding-top: 24px; }
+</style>
+</head>
+<body>
+<main class="doc">
+  <header>
+    <a href="index.html" style="font-size:14px;color:var(--fg-2);text-decoration:none">← Back to Branch Chat</a>
+    <div class="brand">
+      <svg width="26" height="26" viewBox="0 0 512 512" aria-hidden="true">
+        <rect width="512" height="512" rx="110" fill="#0a0a0a"/>
+        <g stroke="#fff" stroke-width="34"><line x1="256" y1="120" x2="140" y2="300"/><line x1="256" y1="120" x2="372" y2="300"/><line x1="372" y1="300" x2="372" y2="420"/></g>
+        <g fill="#0a0a0a" stroke="#fff" stroke-width="22"><circle cx="256" cy="120" r="62"/><circle cx="140" cy="300" r="50"/><circle cx="372" cy="300" r="50"/><circle cx="372" cy="420" r="50"/></g>
+      </svg>
+      Branch Chat
+    </div>
+    <h1>Privacy Policy</h1>
+    <p class="meta">Effective November 5, 2026 · Applies to the Branch Chat Chrome extension</p>
+    <p class="lead">Branch Chat lets you highlight text in an AI chat and open a side conversation about it. This policy explains what the extension reads, where that information is kept, and where it is sent.</p>
+  </header>
+
+  <aside class="glance" aria-label="Summary">
+    <h2>At a glance</h2>
+    <ul>
+      <li><span>Branch Chat has no servers of its own. The developer never receives your chats, questions, images or keys.</span></li>
+      <li><span>Everything is stored in your own browser. It is sent only to the AI provider you choose, when you send a branch message.</span></li>
+      <li><span>No analytics, no tracking, no advertising, and no sale of data.</span></li>
+    </ul>
+  </aside>
+
+  <section aria-labelledby="reads">
+    <h2 id="reads">What the extension reads and stores</h2>
+    <p>Branch Chat only reads a page when you act: when you right-click selected text and choose <strong>Branch chat</strong>, or press <strong>Update</strong> in a branch.</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th scope="col">Information</th><th scope="col">Why</th></tr></thead>
+        <tbody>
+          <tr><td>The text you highlight</td><td>It is the subject of the branch.</td></tr>
+          <tr><td>The visible conversation on ChatGPT, Claude or Gemini</td><td>So a branch can remember the chat it came from. You can turn this off in Account → Answer preferences.</td></tr>
+          <tr><td>The questions you type and images you attach in branches</td><td>They make up the branch conversation.</td></tr>
+          <tr><td>The address and title of the chat tab</td><td>So branches are saved with, and shown for, the right chat.</td></tr>
+          <tr><td>The name you enter during setup</td><td>Shown in the extension only.</td></tr>
+          <tr><td>Your AI provider API key, or the key created by Sign in with OpenRouter</td><td>Needed to send requests to that provider on your behalf.</td></tr>
+          <tr><td>Your settings</td><td>Chosen provider, model and answer preferences.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>All of this is stored locally with Chrome's extension storage (<code>chrome.storage.local</code>) on your device. It is not synced to other devices and is deleted when you remove the extension.</p>
+  </section>
+
+  <section aria-labelledby="sent">
+    <h2 id="sent">What is sent, and to whom</h2>
+    <p>When you send a message in a branch, Branch Chat sends a request directly from your browser to the one AI provider you selected. That request contains:</p>
+    <ul>
+      <li>the copy of the original chat (unless you turned that off),</li>
+      <li>the highlighted text and the messages and images in that branch and the branches above it,</li>
+      <li>your API key, to authenticate with that provider.</li>
+    </ul>
+    <p>The provider handles that data under its own privacy policy:
+      <a href="https://www.anthropic.com/legal/privacy" target="_blank" rel="noopener noreferrer">Anthropic</a>,
+      <a href="https://openai.com/policies/privacy-policy/" target="_blank" rel="noopener noreferrer">OpenAI</a>,
+      <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer">Google</a>,
+      <a href="https://openrouter.ai/privacy" target="_blank" rel="noopener noreferrer">OpenRouter</a>.
+      If you connect your own custom server, requests go only to the address you entered.</p>
+    <p><strong>Sign in with OpenRouter</strong> opens OpenRouter's own sign-in page. After you approve, OpenRouter returns an API key, which is stored only in your browser.</p>
+  </section>
+
+  <section aria-labelledby="not">
+    <h2 id="not">What Branch Chat does not do</h2>
+    <ul>
+      <li>It does not collect your browsing history, and it does not read pages you have not chosen to branch from.</li>
+      <li>It does not log keystrokes, clicks or other activity.</li>
+      <li>It does not include analytics, crash reporting, advertising or tracking code.</li>
+      <li>It does not sell, rent or share your data with anyone other than the AI provider you choose.</li>
+      <li>It does not use your data for advertising, or to determine creditworthiness or for lending.</li>
+      <li>It does not run code downloaded from the internet. All code ships inside the extension.</li>
+    </ul>
+    <p>The use of information received by Branch Chat adheres to the <a href="https://developer.chrome.com/docs/webstore/program-policies/user-data-faq" target="_blank" rel="noopener noreferrer">Chrome Web Store User Data Policy</a>, including the Limited Use requirements.</p>
+  </section>
+
+  <section aria-labelledby="choices">
+    <h2 id="choices">Your choices</h2>
+    <ul>
+      <li><strong>Delete branches:</strong> hover a branch and press ×, or delete a whole chat from History.</li>
+      <li><strong>Disconnect a provider:</strong> Account → Disconnect removes its key from your browser.</li>
+      <li><strong>Sign out:</strong> removes your account name and all keys; branches remain until you delete them.</li>
+      <li><strong>Stop sending the original chat:</strong> turn off "Remember the original chat" in Answer preferences.</li>
+      <li><strong>Remove everything:</strong> uninstalling the extension deletes all of its stored data. Use Export backup first if you want a copy.</li>
+    </ul>
+  </section>
+
+  <section aria-labelledby="kids">
+    <h2 id="kids">Children</h2>
+    <p>Branch Chat is not directed to children under 13 and does not knowingly collect information from them.</p>
+  </section>
+
+  <section aria-labelledby="changes">
+    <h2 id="changes">Changes to this policy</h2>
+    <p>If what the extension does with your data changes, this page will be updated and the effective date above will change.</p>
+  </section>
+
+  <section aria-labelledby="contact">
+    <h2 id="contact">Contact</h2>
+    <p>Questions about this policy can be sent to the developer through the contact details on Branch Chat's Chrome Web Store listing.</p>
+  </section>
+
+  <footer>Branch Chat · Privacy Policy · Effective November 5, 2026</footer>
+</main>
+</body>
+</html>
