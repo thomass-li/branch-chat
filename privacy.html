@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Branch Chat Privacy Policy</title>
+<link rel="icon" type="image/png" href="assets/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap">
+<style>
+  /* Layout: a single readable column, like a policy document; the extension's own monochrome palette. */
+  :root {
+    --bg: #fafafa;
+    --surface: #ffffff;
+    --fg: #161616;
+    --fg-2: #5c5c5c;
+    --rule: #e2e2e2;
+    --mark: #1f1f1f;
+    --font-body: "Geist", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    --font-mono: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #1f1f1f; --surface: #262626; --fg: #e6e6e6; --fg-2: #a8a8a8; --rule: #383838; --mark: #e6e6e6;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #1f1f1f; --surface: #262626; --fg: #e6e6e6; --fg-2: #a8a8a8; --rule: #383838; --mark: #e6e6e6;
+    color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    background: var(--bg);
+    color: var(--fg);
+    font: 16px/1.65 var(--font-body);
+    -webkit-font-smoothing: antialiased;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    padding-block: 56px 72px;
+  }
+  .doc { max-width: 680px; margin: 0 auto; display: grid; gap: 40px; }
+
+  header { display: grid; gap: 14px; }
+  .brand { display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 15px; }
+  .brand svg { flex: none; }
+  h1 { font-size: clamp(30px, 6vw, 40px); line-height: 1.12; letter-spacing: -0.02em; margin: 0; text-wrap: balance; }
+  .meta { color: var(--fg-2); font-size: 14px; margin: 0; }
+  .lead { font-size: 18px; margin: 0; }
+
+  .glance {
+    background: var(--surface); border: 1px solid var(--rule); border-radius: 14px;
+    padding: 20px 22px; display: grid; gap: 12px;
+  }
+  .glance h2 { font-size: 13px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--fg-2); margin: 0; font-weight: 600; }
+  .glance ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+  .glance li { display: grid; grid-template-columns: 18px 1fr; gap: 10px; align-items: start; }
+  .glance li::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--mark); margin-top: 0.62em; justify-self: center; }
+
+  section { display: grid; gap: 12px; }
+  section h2 { font-size: 20px; letter-spacing: -0.01em; margin: 0; line-height: 1.3; text-wrap: balance; }
+  section p { margin: 0; }
+  section ul { margin: 0; padding-left: 1.2em; display: grid; gap: 8px; }
+  section li::marker { color: var(--fg-2); }
+  .doc > section + section { border-top: 1px solid var(--rule); padding-top: 32px; }
+
+  .table-wrap { overflow-x: auto; border: 1px solid var(--rule); border-radius: 12px; background: var(--surface); }
+  table { border-collapse: collapse; width: 100%; font-size: 14.5px; min-width: 520px; }
+  th, td { text-align: left; vertical-align: top; padding: 11px 14px; border-bottom: 1px solid var(--rule); }
+  tr:last-child td { border-bottom: 0; }
+  th { font-size: 12px; text-transform: uppercase; letter-spacing: 0.07em; color: var(--fg-2); font-weight: 600; }
+  td:first-child { font-weight: 500; }
+
+  code { font-family: var(--font-mono); font-size: 0.88em; background: var(--surface); border: 1px solid var(--rule); border-radius: 5px; padding: 0.05em 0.35em; }
+  a { color: var(--fg); text-decoration: underline; text-underline-offset: 3px; text-decoration-thickness: 1px; }
+  a:hover { text-decoration-thickness: 2px; }
+  a:focus-visible { outline: 2px solid var(--fg); outline-offset: 2px; border-radius: 3px; }
+  footer { color: var(--fg-2); font-size: 14px; border-top: 1px solid var(--rule); padding-top: 24px; }
+</style>
+</head>
+<body>
+<main class="doc">
+  <header>
+    <a href="index.html" style="font-size:14px;color:var(--fg-2);text-decoration:none">← Back to Branch Chat</a>
+    <div class="brand">
+      <svg width="26" height="26" viewBox="0 0 512 512" aria-hidden="true">
+        <rect width="512" height="512" rx="110" fill="#0a0a0a"/>
+        <g stroke="#fff" stroke-width="34"><line x1="256" y1="120" x2="140" y2="300"/><line x1="256" y1="120" x2="372" y2="300"/><line x1="372" y1="300" x2="372" y2="420"/></g>
+        <g fill="#0a0a0a" stroke="#fff" stroke-width="22"><circle cx="256" cy="120" r="62"/><circle cx="140" cy="300" r="50"/><circle cx="372" cy="300" r="50"/><circle cx="372" cy="420" r="50"/></g>
+      </svg>
+      Branch Chat
+    </div>
+    <h1>Privacy Policy</h1>
+    <p class="meta">Effective November 5, 2026 · Applies to the Branch Chat Chrome extension</p>
+    <p class="lead">Branch Chat lets you highlight text in an AI chat and open a side conversation about it. This policy explains what the extension reads, where that information is kept, and where it is sent.</p>
+  </header>
+
+  <aside class="glance" aria-label="Summary">
+    <h2>At a glance</h2>
+    <ul>
+      <li><span>Branch Chat has no servers of its own. The developer never receives your chats, questions, images or keys.</span></li>
+      <li><span>Everything is stored in your own browser. It is sent only to the AI provider you choose, when you send a branch message.</span></li>
+      <li><span>No analytics, no tracking, no advertising, and no sale of data.</span></li>
+    </ul>
+  </aside>
+
+  <section aria-labelledby="reads">
+    <h2 id="reads">What the extension reads and stores</h2>
+    <p>Branch Chat only reads a page when you act: when you right-click selected text and choose <strong>Branch chat</strong>, or press <strong>Update</strong> in a branch.</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th scope="col">Information</th><th scope="col">Why</th></tr></thead>
+        <tbody>
+          <tr><td>The text you highlight</td><td>It is the subject of the branch.</td></tr>
+          <tr><td>The visible conversation on ChatGPT, Claude or Gemini</td><td>So a branch can remember the chat it came from. You can turn this off in Account → Answer preferences.</td></tr>
+          <tr><td>The questions you type and images you attach in branches</td><td>They make up the branch conversation.</td></tr>
+          <tr><td>The address and title of the chat tab</td><td>So branches are saved with, and shown for, the right chat.</td></tr>
+          <tr><td>The name you enter during setup</td><td>Shown in the extension only.</td></tr>
+          <tr><td>Your AI provider API key, or the key created by Sign in with OpenRouter</td><td>Needed to send requests to that provider on your behalf.</td></tr>
+          <tr><td>Your settings</td><td>Chosen provider, model and answer preferences.</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>All of this is stored locally with Chrome's extension storage (<code>chrome.storage.local</code>) on your device. It is not synced to other devices and is deleted when you remove the extension.</p>
+  </section>
+
+  <section aria-labelledby="sent">
+    <h2 id="sent">What is sent, and to whom</h2>
+    <p>When you send a message in a branch, Branch Chat sends a request directly from your browser to the one AI provider you selected. That request contains:</p>
+    <ul>
+      <li>the copy of the original chat (unless you turned that off),</li>
+      <li>the highlighted text and the messages and images in that branch and the branches above it,</li>
+      <li>your API key, to authenticate with that provider.</li>
+    </ul>
+    <p>The provider handles that data under its own privacy policy:
+      <a href="https://www.anthropic.com/legal/privacy" target="_blank" rel="noopener noreferrer">Anthropic</a>,
+      <a href="https://openai.com/policies/privacy-policy/" target="_blank" rel="noopener noreferrer">OpenAI</a>,
+      <a href="https://policies.google.com/privacy" target="_blank" rel="noopener noreferrer">Google</a>,
+      <a href="https://openrouter.ai/privacy" target="_blank" rel="noopener noreferrer">OpenRouter</a>.
+      If you connect your own custom server, requests go only to the address you entered.</p>
+    <p><strong>Sign in with OpenRouter</strong> opens OpenRouter's own sign-in page. After you approve, OpenRouter returns an API key, which is stored only in your browser.</p>
+  </section>
+
+  <section aria-labelledby="not">
+    <h2 id="not">What Branch Chat does not do</h2>
+    <ul>
+      <li>It does not collect your browsing history, and it does not read pages you have not chosen to branch from.</li>
+      <li>It does not log keystrokes, clicks or other activity.</li>
+      <li>It does not include analytics, crash reporting, advertising or tracking code.</li>
+      <li>It does not sell, rent or share your data with anyone other than the AI provider you choose.</li>
+      <li>It does not use your data for advertising, or to determine creditworthiness or for lending.</li>
+      <li>It does not run code downloaded from the internet. All code ships inside the extension.</li>
+    </ul>
+    <p>The use of information received by Branch Chat adheres to the <a href="https://developer.chrome.com/docs/webstore/program-policies/user-data-faq" target="_blank" rel="noopener noreferrer">Chrome Web Store User Data Policy</a>, including the Limited Use requirements.</p>
+  </section>
+
+  <section aria-labelledby="choices">
+    <h2 id="choices">Your choices</h2>
+    <ul>
+      <li><strong>Delete branches:</strong> hover a branch and press ×, or delete a whole chat from History.</li>
+      <li><strong>Disconnect a provider:</strong> Account → Disconnect removes its key from your browser.</li>
+      <li><strong>Sign out:</strong> removes your account name and all keys; branches remain until you delete them.</li>
+      <li><strong>Stop sending the original chat:</strong> turn off "Remember the original chat" in Answer preferences.</li>
+      <li><strong>Remove everything:</strong> uninstalling the extension deletes all of its stored data. Use Export backup first if you want a copy.</li>
+    </ul>
+  </section>
+
+  <section aria-labelledby="kids">
+    <h2 id="kids">Children</h2>
+    <p>Branch Chat is not directed to children under 13 and does not knowingly collect information from them.</p>
+  </section>
+
+  <section aria-labelledby="changes">
+    <h2 id="changes">Changes to this policy</h2>
+    <p>If what the extension does with your data changes, this page will be updated and the effective date above will change.</p>
+  </section>
+
+  <section aria-labelledby="contact">
+    <h2 id="contact">Contact</h2>
+    <p>Questions about this policy can be sent to the developer through the contact details on Branch Chat's Chrome Web Store listing.</p>
+  </section>
+
+  <footer>Branch Chat · Privacy Policy · Effective November 5, 2026</footer>
+</main>
+</body>
+</html>
